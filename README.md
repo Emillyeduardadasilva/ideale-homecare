@@ -1,16 +1,36 @@
-# IDEALE HOME CARE 
-Este projeto trata-se de um sistema web/mobile para gerenciar e acompanhar os cuidados diarios com os idosos, integrando a rotina familiar aos serviços prestados pela **Ideale Home Care**.
+# Ideale Home Care
 
-## Tecnologias a serem usadas:
-* **php** (Back-end)
-* **MySQL** (Banco de dados)
-* **HTML5 / CSS3** (Front-end)
-* **Git / GitHub** (Controle de versão)
+O backend da versão V2 está na pasta [`backend/`](backend/README.md). A aplicação oferece API Laravel para redes de cuidado, tarefas, medicamentos, diário, medições, visitas, agenda, contatos e notificações.
 
-## Status do Projeto
-Em desenvolvimento inicial.
+## Executar o backend
 
-## Como Executar Localmente 
-1. Mova a pasta do projeto para `C:\xampp\htdocs\ideale-homecare` .
-2. Inicie os serviços **Apache** e **MySQL** no painel do **XAMPP**.
-3. Acesse no navegador: `http://localhost/ideale-homecare/index.php` .
+Requisitos: PHP 8.5, Composer 2 e MySQL 8.4. Configure um banco exclusivo da aplicação.
+
+```powershell
+Set-Location backend
+composer install
+Copy-Item .env.example .env
+php artisan key:generate
+# Configure DB_* e as URLs em .env antes de migrar.
+php artisan migrate
+php artisan serve --host=127.0.0.1
+```
+
+Execute também o worker e o agendador, em terminais separados:
+
+```powershell
+php artisan queue:work --tries=1 --timeout=45
+php artisan schedule:work
+```
+
+Para notificações em tempo real, configure Reverb conforme o [guia de operação](backend/docs/OPERACAO.md). Web Push precisa das chaves VAPID e da integração do navegador.
+
+## Documentação
+
+- [Instalação e funcionalidades](backend/README.md)
+- [Contrato de uso da API](backend/API.md)
+- [OpenAPI 3.1](backend/docs/openapi.json), também disponível em `GET /api/v1/openapi.json`
+- [Operação, publicação e recuperação](backend/docs/OPERACAO.md)
+- [Escopo e evidências de validação](backend/docs/ENTREGA.md)
+
+O frontend Vue consome a API separadamente. Em produção, a raiz pública do servidor deve apontar para `backend/public/`.

@@ -1,0 +1,41 @@
+name: Backend tests
+on: [push, pull_request]
+permissions:
+  contents: read
+defaults:
+  run:
+    working-directory: backend
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: testing-only
+          MYSQL_DATABASE: ideale_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -ptesting-only"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    env:
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: ideale_test
+      DB_USERNAME: root
+      DB_PASSWORD: testing-only
+      APP_ENV: testing
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: pdo_mysql, pdo_sqlite, mbstring, openssl, curl, intl, fileinfo, dom, xml
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist
+      - run: cp .env.example .env && php artisan key:generate
+      - run: composer validate --strict
+      - run: composer audit --locked --no-interaction
+      - run: vendor/bin/pint --test
+      - run: php artisan test
