@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\Professional;
+use App\Models\CareMembership;
+use App\Models\Elder;
 use App\Models\PushDelivery;
 use App\Models\RealtimeDelivery;
 use App\Models\Reminder;
@@ -13,6 +15,64 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\Str;
 use Minishlink\WebPush\VAPID;
+
+Artisan::command('care:demo-users', function () {
+    if (! app()->environment(['local', 'testing'])) {
+        $this->error('A criação de acessos de demonstração só é permitida nos ambientes local e testing.');
+
+        return 1;
+    }
+
+    $password = 'Demo'.Str::random(10).'!9';
+    $accounts = [
+        ['name' => 'Administrador de demonstração', 'email' => 'admin.demo@ideale.test', 'role' => 'system_admin'],
+        ['name' => 'Familiar de demonstração', 'email' => 'familia.demo@ideale.test', 'role' => 'family'],
+        ['name' => 'Cuidador de demonstração', 'email' => 'cuidador.demo@ideale.test', 'role' => 'ideale_professional'],
+    ];
+
+    DB::transaction(function () use ($accounts, $password): void {
+        $users = [];
+        foreach ($accounts as $account) {
+            $users[$account['email']] = User::updateOrCreate(
+                ['email' => $account['email']],
+                [
+                    'name' => $account['name'],
+                    'role' => $account['role'],
+                    'active' => true,
+                    'email_verified_at' => now(),
+                    'password' => $password,
+                ],
+            );
+        }
+
+        Professional::updateOrCreate(
+            ['user_id' => $users['cuidador.demo@ideale.test']->id],
+            ['specialty' => 'Cuidados gerais', 'active' => true],
+        );
+
+        $elder = Elder::firstOrCreate(
+            ['name' => 'Idoso de demonstração', 'created_by' => $users['familia.demo@ideale.test']->id],
+            ['birth_date' => '1940-01-01', 'timezone' => 'America/Cuiaba', 'active' => true],
+        );
+
+        CareMembership::updateOrCreate(
+            ['elder_id' => $elder->id, 'user_id' => $users['familia.demo@ideale.test']->id],
+            ['role' => 'manager', 'active' => true],
+        );
+        CareMembership::updateOrCreate(
+            ['elder_id' => $elder->id, 'user_id' => $users['cuidador.demo@ideale.test']->id],
+            ['role' => 'team', 'active' => true],
+        );
+    });
+
+    $this->newLine();
+    $this->info('Acessos de demonstração criados/atualizados para uso local:');
+    $this->table(['Perfil', 'E-mail'], array_map(fn ($account) => [$account['role'], $account['email']], $accounts));
+    $this->line('Senha temporária comum: '.$password);
+    $this->warn('Execute novamente apenas se quiser redefinir a senha desses três acessos.');
+
+    return 0;
+})->purpose('Cria contas locais de demonstração para administrador, familiar e cuidador');
 
 Artisan::command('care:tick', function () {
     app(MedicationService::class)->generate();
@@ -125,3 +185,82 @@ Artisan::command('care:retry-push {id}', function () {
     $d->update(['status' => 'pending', 'attempts' => 0, 'available_at' => now(), 'lease_until' => null]);
     $this->info('Entrega liberada para reprocessamento com nova verificação de acesso e origem.');
 });
+
+Artisan::command('care:password {email}', function () {
+    $email = Str::lower(trim($this->argument('email')));
+    if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $this->error('Informe um e-mail válido.');
+
+        return 1;
+    }
+
+    $user = User::where('email', $email)->first();
+    if (! $user) {
+        $this->error('Não existe uma conta com esse e-mail.');
+
+        return 1;
+    }
+
+    $password = $this->secret('Nova senha (mínimo 8 caracteres, com letras e números)');
+    $confirmation = $this->secret('Confirme a nova senha');
+    if (! is_string($password) || mb_strlen($password, 'UTF-8') < 8
+        || ! preg_match('/\p{L}/u', $password)
+        || ! preg_match('/[0-9]/', $password)
+        || ! hash_equals($password, (string) $confirmation)) {
+        $this->error('Senha inválida ou confirmação diferente. Nenhuma alteração foi feita.');
+
+        return 1;
+    }
+
+    DB::transaction(function () use ($user, $password): void {
+        $user->password = $password;
+        $user->remember_token = Str::random(60);
+        $user->save();
+        DB::table('sessions')->where('user_id', $user->id)->delete();
+    });
+
+    $this->info('Senha atualizada. Entre novamente na aplicação.');
+})->purpose('Redefine uma senha localmente sem exibi-la no terminal');
+
+Artisan::command('care:system-admin {email}', function () {
+    $email = Str::lower(trim($this->argument('email')));
+    if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $this->error('Informe um e-mail válido.');
+
+        return 1;
+    }
+
+    $user = User::where('email', $email)->first();
+    if (! $user) {
+        $this->error('Crie a conta familiar primeiro e execute este comando novamente.');
+
+        return 1;
+    }
+    if ($user->role !== 'system_admin' && ! $this->confirm('Promover esta conta a administradora global?')) {
+        $this->info('Nenhuma alteração foi feita.');
+
+        return 0;
+    }
+
+    $password = $this->secret('Nova senha (mínimo 8 caracteres, com letras e números)');
+    $confirmation = $this->secret('Confirme a nova senha');
+    if (! is_string($password) || mb_strlen($password, 'UTF-8') < 8
+        || ! preg_match('/\p{L}/u', $password)
+        || ! preg_match('/[0-9]/', $password)
+        || ! hash_equals($password, (string) $confirmation)) {
+        $this->error('Senha inválida ou confirmação diferente. Nenhuma alteração foi feita.');
+
+        return 1;
+    }
+
+    DB::transaction(function () use ($user, $password): void {
+        $user->role = 'system_admin';
+        $user->active = true;
+        $user->password = $password;
+        $user->remember_token = Str::random(60);
+        $user->save();
+        DB::table('sessions')->where('user_id', $user->id)->delete();
+    });
+
+    $this->info('Conta promovida a administradora global e senha atualizada. Entre novamente na aplicação.');
+})->purpose('Promove uma conta existente a administradora global com confirmação local');

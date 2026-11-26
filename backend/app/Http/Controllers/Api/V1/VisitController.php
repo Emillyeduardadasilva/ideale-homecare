@@ -10,6 +10,7 @@ use App\Models\Professional;
 use App\Models\Visit;
 use App\Services\CareAccess;
 use App\Services\VisitService;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -22,6 +23,58 @@ class VisitController extends Controller
         $this->access->check($r->user(), $elder);
 
         return Visit::where('elder_id', $elder->id)->with('professional.user:id,name')->orderByDesc('starts_at')->paginate(30);
+    }
+
+    public function caregiverAgenda(Request $r)
+    {
+        abort_unless($r->user()->role === 'ideale_professional', 403, 'Agenda individual disponível para profissionais de cuidado.');
+        $data = $r->validate(['date' => 'sometimes|date_format:Y-m-d']);
+        $timezone = config('app.timezone', 'America/Cuiaba');
+        $date = $data['date'] ?? CarbonImmutable::now($timezone)->toDateString();
+        $start = CarbonImmutable::parse($date, $timezone)->startOfDay()->utc();
+        $end = $start->addDay();
+        $professional = Professional::where('user_id', $r->user()->id)->where('active', true)->first();
+
+        if (! $professional) {
+            return ['data' => []];
+        }
+
+        $visits = Visit::query()
+            ->with('elder:id,name,timezone')
+            ->where('professional_id', $professional->id)
+            ->whereHas('elder.memberships', fn ($query) => $query
+                ->where('user_id', $r->user()->id)
+                ->where('role', 'team')
+                ->where('active', true))
+            ->where('starts_at', '<', $end)
+            ->where('ends_at', '>', $start)
+            ->where('status', '!=', 'cancelled')
+            ->orderBy('starts_at')
+            ->get();
+
+        return ['data' => $visits->map(function (Visit $visit) {
+            $actions = [];
+            if ($visit->status === 'scheduled') {
+                $actions[] = 'confirm';
+            } elseif ($visit->status === 'confirmed' && $visit->starts_at->lte(now())) {
+                $actions[] = 'complete';
+            }
+
+            return [
+                'id' => 'visit:'.$visit->id,
+                'source_id' => $visit->id,
+                'elder_id' => $visit->elder_id,
+                'elder_name' => $visit->elder?->name,
+                'timezone' => $visit->elder?->timezone,
+                'type' => 'visit',
+                'title' => 'Visita: '.$visit->specialty,
+                'starts_at' => $visit->starts_at,
+                'ends_at' => $visit->ends_at,
+                'status' => $visit->status,
+                'version' => $visit->version,
+                'allowed_actions' => $actions,
+            ];
+        })];
     }
 
     public function professionals(Request $r, Elder $elder)

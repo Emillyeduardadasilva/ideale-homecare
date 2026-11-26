@@ -1,11 +1,13 @@
 <?php
 
 use App\Http\Controllers\Api\V1\CalendarController;
+use App\Http\Controllers\Api\V1\AdminController;
 use App\Http\Controllers\Api\V1\CareNetworkController;
 use App\Http\Controllers\Api\V1\ContactController;
 use App\Http\Controllers\Api\V1\DailyViewController;
 use App\Http\Controllers\Api\V1\DiaryController;
 use App\Http\Controllers\Api\V1\ElderController;
+use App\Http\Controllers\Api\V1\FinanceEntryController;
 use App\Http\Controllers\Api\V1\MedicationController;
 use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\OpenApiController;
@@ -16,13 +18,24 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('v1/openapi.json', OpenApiController::class);
 
-foreach (['membership', 'invitation', 'task', 'medication', 'occurrence', 'visit', 'event', 'contact', 'shift'] as $parameter) {
+foreach (['membership', 'invitation', 'task', 'medication', 'occurrence', 'visit', 'event', 'contact', 'shift', 'entry', 'user'] as $parameter) {
     Route::pattern($parameter, '[0-9]+');
 }
 Route::prefix('v1')->middleware(['auth:sanctum', 'active', 'verified', IdempotentRequest::class])->group(function () {
+    Route::prefix('admin')->group(function () {
+        Route::get('overview', [AdminController::class, 'overview']);
+        Route::get('users', [AdminController::class, 'users']);
+        Route::patch('users/{user}/active', [AdminController::class, 'setActive']);
+        Route::get('elders', [AdminController::class, 'elders']);
+    });
+    Route::get('caregiver/agenda', [VisitController::class, 'caregiverAgenda']);
     Route::get('elders', [ElderController::class, 'index']);
     Route::post('elders', [ElderController::class, 'store']);
     Route::post('invitations/accept', [CareNetworkController::class, 'accept']);
+    Route::get('finance/entries', [FinanceEntryController::class, 'index']);
+    Route::post('finance/entries', [FinanceEntryController::class, 'store']);
+    Route::put('finance/entries/{entry}', [FinanceEntryController::class, 'update']);
+    Route::delete('finance/entries/{entry}', [FinanceEntryController::class, 'destroy']);
     Route::get('notifications', [NotificationController::class, 'index']);
     Route::post('notifications/{notification}/read', [NotificationController::class, 'read'])->whereNumber('notification');
     Route::get('push/public-key', [NotificationController::class, 'key']);

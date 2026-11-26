@@ -12,7 +12,7 @@ Instantes aceitam offset explícito (`2026-11-06T08:00:00-04:00`) ou UTC com `Z`
 
 | Método e caminho | Corpo |
 |---|---|
-| POST `/auth/register` | `name`, `email`, `password`, `password_confirmation` (mínimo 12 caracteres, letras e números) |
+| POST `/auth/register` | `name`, `email`, `password`, `password_confirmation` (mínimo 8 caracteres, letras e números) |
 | POST `/auth/login` | `email`, `password` |
 | GET `/auth/me` | — |
 | POST `/auth/logout` | — |
@@ -42,6 +42,19 @@ Convite retorna `data`, `invitation_token` e `invitation_url`; expira em sete di
 ```json
 {"name":"Pessoa acompanhada","birth_date":"1940-02-10","timezone":"America/Cuiaba"}
 ```
+
+## Financeiro
+
+Os lançamentos financeiros são privados por conta: cada usuário só consulta e altera os próprios registros. Valores são enviados como números decimais em reais; o servidor persiste duas casas decimais.
+
+| Método e caminho | Corpo/filtro |
+|---|---|
+| GET `/finance/entries` | `page` opcional; filtros `from`, `to` (`YYYY-MM-DD`) e `type` (`income`/`expense`) |
+| POST `/finance/entries` | `description`, `amount`, `type`, `category`, `status`; `due_date` opcional/nula |
+| PUT `/finance/entries/{entry}` | Campos parciais entre os campos do POST |
+| DELETE `/finance/entries/{entry}` | — |
+
+Estados: `pending` e `paid`. Tipos: `income` e `expense`. Cada alteração exige sessão e CSRF; IDs de outra conta respondem 404.
 
 ## Tarefas
 
@@ -125,3 +138,9 @@ PUT exige `version`. Reagendamento volta a `scheduled`. Sobreposição do profis
 Use valores reais de `PushSubscription.toJSON()`; placeholders são rejeitados. Não envie conteúdo de saúde no endpoint público do provedor push. Veja README para Service Worker, configuração VAPID e operação da fila.
 
 Reverb: POST `/broadcasting/auth` recebe `socket_id` e `channel_name`; exige sessão, CSRF, conta ativa e e-mail verificado. Cada usuário assina exclusivamente `private-care.users.{id}`. O evento `care.reminder.available` contém apenas `notification_id`. O histórico persistido continua acessível pela caixa de notificações. Configuração e recuperação em [`docs/OPERACAO.md`](docs/OPERACAO.md).
+
+## Administração global
+
+As rotas `/api/v1/admin/overview`, `/api/v1/admin/users` e `/api/v1/admin/elders` são exclusivas do perfil `system_admin`. A visão permite consultar indicadores, contas e idosos; a equipe administrativa pode ativar ou suspender contas por `PATCH /api/v1/admin/users/{user}/active`. A última conta administrativa ativa e a própria conta não podem ser suspensas. Consultas administrativas ficam registradas em `audit_logs`. O perfil global não pode alterar registros clínicos.
+
+A primeira conta `system_admin` é promovida pelo operador no terminal com `php artisan care:system-admin email@dominio.com`; o comando exige confirmação local e nova senha oculta.

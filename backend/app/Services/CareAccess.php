@@ -14,6 +14,20 @@ class CareAccess
 {
     public function scope(Builder $query, User $user): Builder
     {
+        if ($user->role === 'system_admin') {
+            DB::table('audit_logs')->insert([
+                'user_id' => $user->id,
+                'elder_id' => null,
+                'action' => 'system_admin.elders.listed',
+                'entity' => 'elders',
+                'entity_id' => null,
+                'request_id' => request()->attributes->get('request_id'),
+                'created_at' => now(),
+            ]);
+
+            return $query;
+        }
+
         return $query->where(function (Builder $q) use ($user) {
             $q->where('user_id', $user->id)->orWhereHas('memberships', fn (Builder $m) => $m->where('user_id', $user->id)->where('active', true));
         });
@@ -23,6 +37,9 @@ class CareAccess
     {
         if (! $user->active) {
             return false;
+        }
+        if ($user->role === 'system_admin') {
+            return $ability === 'view';
         }
         $m = CareMembership::where('elder_id', $elder->id)->where('user_id', $user->id)->where('active', true)->first();
         if ($ability === 'view') {
@@ -43,13 +60,28 @@ class CareAccess
             'manage' => $user->role === 'family' && $m->role === 'manager',
             'schedule' => $user->role === 'ideale_admin' && $m->role === 'team',
             'professional' => $user->role === 'ideale_professional' && $m->role === 'team',
-            'confirm' => ($user->role === 'family' && in_array($m->role, ['manager', 'relative'])),
+            'confirm' => ($user->role === 'family' && in_array($m->role, ['manager', 'relative']))
+                || ($user->role === 'ideale_professional' && $m->role === 'team'),
             default => false,
         };
     }
 
     public function check(User $user, Elder $elder, string $ability = 'view'): void
     {
+        if ($user->role === 'system_admin' && request()->isMethod('GET')) {
+            DB::table('audit_logs')->insert([
+                'user_id' => $user->id,
+                'elder_id' => $elder->id,
+                'action' => 'system_admin.care_record_viewed',
+                'entity' => 'elders',
+                'entity_id' => $elder->id,
+                'request_id' => request()->attributes->get('request_id'),
+                'created_at' => now(),
+            ]);
+
+            return;
+        }
+
         abort_unless($this->allows($user, $elder, $ability), 403, 'Acesso não autorizado para este idoso.');
     }
 

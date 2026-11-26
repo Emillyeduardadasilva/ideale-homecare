@@ -3,7 +3,7 @@
   "info": {
     "title": "Ideale Home Care V2",
     "version": "1.0.0",
-    "description": "API de cuidados domésticos e visitas. Sessão Sanctum com cookies e CSRF. Autorização por vínculo ativo com cada idoso; equipe não recebe acesso global. Confirmação de medicação é relato, sem comprovação clínica. Use Accept: application/json. Contrato inclui rotas implementadas; serviços externos exigem configuração."
+    "description": "API de cuidados domésticos e visitas. Sessão Sanctum com cookies e CSRF. Autorização por vínculo ativo para a equipe de cuidado; `system_admin` possui consulta global somente leitura e gestão de contas auditada. Confirmação de medicação é relato, sem comprovação clínica. Use Accept: application/json. Contrato inclui rotas implementadas; serviços externos exigem configuração."
   },
   "servers": [
     {
@@ -40,6 +40,9 @@
     },
     {
       "name": "Infraestrutura"
+    },
+    {
+      "name": "Financeiro"
     }
   ],
   "paths": {
@@ -9400,6 +9403,602 @@
           }
         }
       }
+    },
+    "/api/v1/finance/entries": {
+      "get": {
+        "operationId": "get_api_v1_finance_entries",
+        "summary": "Listar lançamentos financeiros da própria conta",
+        "tags": [
+          "Financeiro"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "income",
+                "expense"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação concluída.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinanceEntryPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sessão ausente ou expirada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Acesso negado ou e-mail não verificado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Campos inválidos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "post_api_v1_finance_entries",
+        "summary": "Criar lançamento financeiro",
+        "tags": [
+          "Financeiro"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Operação concluída.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FinanceEntry"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sessão ausente ou expirada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Acesso negado ou e-mail não verificado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Campos inválidos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinanceEntryInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/finance/entries/{entry}": {
+      "put": {
+        "operationId": "put_api_v1_finance_entries_entry",
+        "summary": "Atualizar lançamento da própria conta",
+        "tags": [
+          "Financeiro"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "entry",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operação concluída.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FinanceEntry"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sessão ausente ou expirada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Acesso negado ou e-mail não verificado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lançamento inexistente ou fora da conta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Campos inválidos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinanceEntryPatch"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete_api_v1_finance_entries_entry",
+        "summary": "Excluir lançamento da própria conta",
+        "tags": [
+          "Financeiro"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "entry",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Lançamento excluído."
+          },
+          "401": {
+            "description": "Sessão ausente ou expirada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Acesso negado ou e-mail não verificado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lançamento inexistente ou fora da conta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/profile": {
+      "put": {
+        "operationId": "put_api_v1_auth_profile",
+        "summary": "Atualizar perfil autenticado",
+        "tags": [
+          "Conta"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Operação concluída.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sessão ausente ou expirada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Campos inválidos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/password": {
+      "put": {
+        "operationId": "put_api_v1_auth_password",
+        "summary": "Alterar senha da sessão",
+        "tags": [
+          "Conta"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Operação concluída.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sessão ausente ou expirada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Campos inválidos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/elders": {
+      "get": {
+        "summary": "Lista todos os idosos",
+        "tags": [
+          "Administração"
+        ],
+        "responses": {
+          "200": {
+            "description": "Idosos paginados com quantidade de vínculos ativos"
+          },
+          "403": {
+            "description": "Acesso exclusivo ao administrador global"
+          }
+        },
+        "operationId": "get_admin_elders"
+      }
+    },
+    "/api/v1/admin/users/{user}/active": {
+      "patch": {
+        "tags": [
+          "Administração"
+        ],
+        "responses": {
+          "403": {
+            "description": "Acesso exclusivo ao administrador global"
+          },
+          "422": {
+            "description": "Não é possível suspender a própria conta ou o último administrador"
+          },
+          "200": {
+            "description": "Status atualizado"
+          }
+        },
+        "summary": "Ativa ou suspende uma conta",
+        "operationId": "patch_admin_user_active",
+        "parameters": [
+          {
+            "name": "user",
+            "in": "path",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "active": {
+                    "type": "boolean"
+                  }
+                },
+                "type": "object",
+                "required": [
+                  "active"
+                ]
+              }
+            }
+          },
+          "required": true
+        }
+      }
+    },
+    "/api/v1/caregiver/agenda": {
+      "get": {
+        "operationId": "get_api_v1_caregiver_agenda",
+        "summary": "Consultar agenda de visitas do profissional",
+        "tags": [
+          "Agenda"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Visitas atribu?das ao profissional."
+          },
+          "401": {
+            "description": "Sess?o ausente ou expirada."
+          },
+          "403": {
+            "description": "Acesso exclusivo a profissional de cuidado."
+          },
+          "422": {
+            "description": "Data inv?lida."
+          }
+        }
+      }
+    },
+    "/api/v1/admin/overview": {
+      "get": {
+        "summary": "Consulta indicadores globais",
+        "tags": [
+          "Administração"
+        ],
+        "responses": {
+          "200": {
+            "description": "Indicadores agregados do sistema"
+          },
+          "403": {
+            "description": "Acesso exclusivo ao administrador global"
+          }
+        },
+        "operationId": "get_admin_overview"
+      }
+    },
+    "/api/v1/admin/users": {
+      "get": {
+        "summary": "Lista e filtra contas do sistema",
+        "tags": [
+          "Administração"
+        ],
+        "parameters": [
+          {
+            "name": "role",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contas paginadas sem dados de autenticação"
+          },
+          "403": {
+            "description": "Acesso exclusivo ao administrador global"
+          }
+        },
+        "operationId": "get_admin_users"
+      }
     }
   },
   "components": {
@@ -10512,7 +11111,7 @@
           },
           "password": {
             "type": "string",
-            "minLength": 12,
+            "minLength": 8,
             "writeOnly": true,
             "description": "Ao menos uma letra e um número."
           },
@@ -10554,7 +11153,7 @@
           },
           "password": {
             "type": "string",
-            "minLength": 12,
+            "minLength": 8,
             "writeOnly": true
           },
           "token": {
@@ -12015,6 +12614,226 @@
           "info",
           "paths",
           "components"
+        ]
+      },
+      "FinanceEntry": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "user_id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "amount": {
+            "type": "string",
+            "description": "Valor decimal em reais, com duas casas."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "income",
+              "expense"
+            ]
+          },
+          "category": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "due_date": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "paid"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "description",
+          "amount",
+          "type",
+          "category",
+          "status"
+        ]
+      },
+      "FinanceEntryInput": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "amount": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "income",
+              "expense"
+            ]
+          },
+          "category": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "due_date": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "paid"
+            ]
+          }
+        },
+        "required": [
+          "description",
+          "amount",
+          "type",
+          "category",
+          "status"
+        ]
+      },
+      "FinanceEntryPatch": {
+        "type": "object",
+        "minProperties": 1,
+        "properties": {
+          "description": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "amount": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "income",
+              "expense"
+            ]
+          },
+          "category": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "due_date": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "paid"
+            ]
+          }
+        }
+      },
+      "FinanceEntryPage": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FinanceEntry"
+            }
+          },
+          "current_page": {
+            "type": "integer"
+          },
+          "last_page": {
+            "type": "integer"
+          },
+          "per_page": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "data",
+          "current_page",
+          "last_page",
+          "per_page",
+          "total"
+        ]
+      },
+      "ProfileInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "phone": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 40
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 255
+          }
+        }
+      },
+      "ChangePasswordInput": {
+        "type": "object",
+        "properties": {
+          "current_password": {
+            "type": "string",
+            "writeOnly": true
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "writeOnly": true
+          },
+          "password_confirmation": {
+            "type": "string",
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "current_password",
+          "password",
+          "password_confirmation"
         ]
       }
     }

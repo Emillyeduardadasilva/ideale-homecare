@@ -1,0 +1,28 @@
+# Configuração local e credenciais
+/backend/.env
+/backend/.env.*
+!/backend/.env.example
+!/backend/.env.testing.example
+/frontend/.env.local
+/frontend/.env.*.local
+
+# Dependências e saídas geradas
+/backend/vendor/
+/backend/node_modules/
+/backend/public/build/
+/frontend/node_modules/
+/frontend/dist/
+/frontend/dist-ssr/
+
+# Dados locais, chaves e backups
+/backend/storage/app/private/*
+!/backend/storage/app/private/.gitignore
+
+# Configuração pessoal do editor e do sistema
+/.vscode/*
+!/.vscode/extensions.json
+/.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log

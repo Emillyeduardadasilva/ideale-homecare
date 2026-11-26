@@ -22,4 +22,9 @@ class Visit extends Model
     {
         return $this->belongsTo(Professional::class);
     }
+
+    public function elder(): BelongsTo
+    {
+        return $this->belongsTo(Elder::class);
+    }
 }

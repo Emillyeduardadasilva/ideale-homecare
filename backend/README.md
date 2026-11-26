@@ -40,6 +40,7 @@ Em produção, use HTTPS e a pasta **`public/`** como raiz pública, supervision
 - Contatos, escala de responsável e telefone para chamada rápida.
 - Notificações persistentes e Web Push com fila, recuperação e tentativas limitadas.
 - Sinalização em tempo real com Reverb, canal privado por usuário e recuperação por cursor.
+- Lançamentos financeiros privados por conta, com receitas, despesas, situação e vencimento.
 - Auditoria sem conteúdo clínico, controle de versões e idempotência opcional nas mutações.
 
 As tabelas e rotas estão em inglês. `users`, `elders`, `medications`, `observations` e `visits` correspondem às entidades do PDF, complementadas pelas tabelas de vínculos e históricos. Não há módulo de faturamento, diagnóstico ou prescrição no escopo V2.
@@ -55,7 +56,7 @@ Use sessão Sanctum. No Vue, habilite `credentials: include` ou Axios `withCrede
 
 `MAIL_MAILER=log` grava links somente no log local. Configure SMTP para enviar confirmação e recuperação de senha reais.
 
-Perfis globais: `family`, `elder`, `ideale_admin`, `ideale_professional`. Vínculos: `manager`, `relative`, `team`. A equipe precisa de vínculo por idoso; não possui acesso global. Convite `team` não eleva conta familiar. A conta `elder` deve estar livre de vínculos familiares; o gestor pode desvinculá-la depois.
+Perfis globais: `family`, `elder`, `ideale_admin`, `ideale_professional`, `system_admin`. Vínculos: `manager`, `relative`, `team`. A equipe de cuidado precisa de vínculo por idoso e não possui acesso global. `system_admin` é um perfil separado: consulta global somente leitura e gestão de status de contas, com auditoria. Convite `team` não eleva conta familiar. A conta `elder` deve estar livre de vínculos familiares; o gestor pode desvinculá-la depois.
 
 Provisionamento de equipe pelo operador do servidor:
 
@@ -95,7 +96,7 @@ php artisan care:vapid
 
 Copie as chaves de `storage/app/private/vapid.json` para `VAPID_PUBLIC_KEY` e `VAPID_PRIVATE_KEY` no ambiente seguro. Configure `VAPID_SUBJECT` com contato real, como `mailto:suporte@seu-dominio`. Preserve as chaves e nunca as versione.
 
-**O Vue ainda precisa registrar um Service Worker**, pedir permissão, inscrever o navegador usando `GET /api/v1/push/public-key` e enviar a inscrição para `POST /api/v1/push/subscriptions`. O worker deve exibir `title` e `body`, usar `tag` para deduplicar e abrir o app no clique. Essa integração de frontend não está nesta pasta. Recebimento em segundo plano depende de HTTPS, permissão, conexão e suporte do navegador/sistema operacional.
+O Vue registra `public/sw.js`, pede permissão após ação do usuário, busca a chave em `GET /api/v1/push/public-key` e salva/remove a inscrição em `POST/DELETE /api/v1/push/subscriptions`. O worker exibe título e texto genérico, usa `tag` para deduplicar e abre a central de notificações no clique. Recebimento em segundo plano depende de HTTPS, VAPID, permissão, conexão e suporte do navegador/sistema operacional.
 
 O backend envia payload criptografado com `notification_id`, `title`, `body` e `tag`. O texto é genérico, sem nome do idoso ou medicamento. O aplicativo busca os dados autorizados ao abrir. Endpoints push aceitos são HTTPS de provedores conhecidos; redirecionamentos são desabilitados. Inscrições são criptografadas no banco.
 
@@ -133,3 +134,6 @@ A suíte padrão usa SQLite em memória. O teste de concorrência é pulado ness
 Cobertura funcional: perfis, isolamento, convites, revogação, duplicatas, versões, medicação, diário, fusos, agenda, visitas e notificações. A concorrência usa dois processos e MySQL real. O transporte push usa a biblioteca real com HTTP simulado.
 
 Referências: [Sanctum](https://laravel.com/docs/13.x/sanctum), [Queues](https://laravel.com/docs/13.x/queues), [Web Push PHP](https://github.com/web-push-libs/web-push-php). As versões exatas estão em `composer.lock`.
+
+
+A conta administrativa global é promovida localmente por php artisan care:system-admin email@dominio.com; não há endpoint público para atribuir esse perfil.

@@ -27,7 +27,9 @@ class DiaryController extends Controller
     {
         $d = $r->validated();
 
-        return $this->access->write($r->user(), $elder, 'family', function (Elder $e) use ($d, $r) {
+        $ability = $r->user()->role === 'ideale_professional' ? 'professional' : 'family';
+
+        return $this->access->write($r->user(), $elder, $ability, function (Elder $e) use ($d, $r) {
             if (! empty($d['corrects_id'])) {
                 $original = Observation::where('elder_id', $e->id)->findOrFail($d['corrects_id']);
                 abort_unless($original->user_id === $r->user()->id, 403, 'Somente o autor pode retificar sua observação.');
@@ -50,7 +52,9 @@ class DiaryController extends Controller
     {
         $d = $r->validated();
 
-        return $this->access->write($r->user(), $elder, 'family', function (Elder $e) use ($d, $r) {
+        $ability = $r->user()->role === 'ideale_professional' ? 'professional' : 'family';
+
+        return $this->access->write($r->user(), $elder, $ability, function (Elder $e) use ($d, $r) {
             $m = Measurement::create([...$d, 'elder_id' => $e->id, 'user_id' => $r->user()->id, 'measured_at' => CarbonImmutable::parse($d['measured_at'])->utc(),
                 'unit' => match ($d['type']) {
                     'blood_pressure' => 'mmHg','glucose' => 'mg/dL','temperature' => '°C'

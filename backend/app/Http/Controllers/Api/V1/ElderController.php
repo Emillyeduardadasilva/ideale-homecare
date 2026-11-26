@@ -18,7 +18,15 @@ class ElderController extends Controller
 
     public function index(Request $r)
     {
-        return ElderResource::collection($this->access->scope(Elder::query(), $r->user())->orderBy('name')->paginate(30));
+        $elders = $this->access->scope(Elder::query(), $r->user());
+        if ($r->user()->role === 'family') {
+            $elders->withExists(['memberships as is_manager' => fn ($query) => $query
+                ->where('user_id', $r->user()->id)
+                ->where('role', 'manager')
+                ->where('active', true)]);
+        }
+
+        return ElderResource::collection($elders->orderBy('name')->paginate(30));
     }
 
     public function store(ElderRequest $r)

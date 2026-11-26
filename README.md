@@ -1,6 +1,6 @@
 # Ideale Home Care
 
-O backend da versão V2 está na pasta [`backend/`](backend/README.md). A aplicação oferece API Laravel para redes de cuidado, tarefas, medicamentos, diário, medições, visitas, agenda, contatos e notificações.
+O backend da versão V2 está na pasta [`backend/`](backend/README.md). A aplicação oferece API Laravel para redes de cuidado, tarefas, medicamentos, diário, medições, visitas, agenda, contatos, notificações e lançamentos financeiros.
 
 ## Executar o backend
 
@@ -23,7 +23,7 @@ php artisan queue:work --tries=1 --timeout=45
 php artisan schedule:work
 ```
 
-Para notificações em tempo real, configure Reverb conforme o [guia de operação](backend/docs/OPERACAO.md). Web Push precisa das chaves VAPID e da integração do navegador.
+Para notificações em tempo real, configure Reverb conforme o [guia de operação](backend/docs/OPERACAO.md). Web Push usa o Service Worker do frontend e precisa das chaves VAPID e de HTTPS.
 
 ## Documentação
 

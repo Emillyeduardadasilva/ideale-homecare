@@ -4,7 +4,7 @@
 
 Use PHP 8.5 com PDO MySQL, mbstring, OpenSSL, cURL, XML, fileinfo e intl; Composer 2; MySQL 8.4. Instale as dependências com `composer install`, configure `.env`, gere `APP_KEY` apenas em uma instalação nova e execute `php artisan migrate`.
 
-As migrations novas acrescentam versão aos contatos, versão/cancelamento às escalas, índices de consulta e entregas duráveis do Reverb. Elas preservam os registros existentes. Nunca use `migrate:fresh` ou testes no banco da aplicação. A reversão de migrations deve ocorrer somente em ambiente identificado para esse fim; a publicação usa evolução do esquema para a frente.
+As migrations novas acrescentam versão aos contatos, versão/cancelamento às escalas, índices de consulta, entregas duráveis do Reverb e a tabela de lançamentos financeiros. Elas preservam os registros existentes. Nunca use `migrate:fresh` ou testes no banco da aplicação. A reversão de migrations deve ocorrer somente em ambiente identificado para esse fim; a publicação usa evolução do esquema para a frente.
 
 Em uma atualização de ambiente existente, preserve a chave e faça backup antes da migração. Após validar a publicação:
 
@@ -60,7 +60,7 @@ As entregas Reverb são persistidas junto da notificação. Se o envio falhar ou
 
 ## Web Push
 
-Execute `php artisan care:vapid`, preserve as chaves privadas e configure `VAPID_SUBJECT`, `VAPID_PUBLIC_KEY` e `VAPID_PRIVATE_KEY`. O frontend precisa registrar Service Worker, obter permissão e cadastrar a inscrição real do navegador. O backend restringe os provedores, impede transferência de dispositivo entre contas e envia conteúdo genérico criptografado. O envio real depende do dispositivo, da permissão, da conexão e do suporte do navegador.
+Execute `php artisan care:vapid`, preserve as chaves privadas e configure `VAPID_SUBJECT`, `VAPID_PUBLIC_KEY` e `VAPID_PRIVATE_KEY`. No frontend, publique `public/sw.js` por HTTPS e ative as notificações na página **Notificações**; o app pede permissão após o clique e cadastra a inscrição real do navegador. O backend restringe os provedores, impede transferência de dispositivo entre contas e envia conteúdo genérico criptografado. O envio real depende do dispositivo, da permissão, da conexão e do suporte do navegador.
 
 ## Monitoramento e recuperação de entregas
 

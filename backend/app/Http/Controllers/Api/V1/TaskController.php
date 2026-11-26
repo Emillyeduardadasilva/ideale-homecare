@@ -38,7 +38,7 @@ class TaskController extends Controller
         $d = $r->validated();
 
         return $this->access->write($r->user(), $elder, 'family', function (Elder $e) use ($r, $d, $id) {
-            $valid = CareMembership::where('elder_id', $e->id)->where('active', true)->whereIn('role', ['manager', 'relative'])->whereIn('user_id', $d['assignees'])->count();
+            $valid = CareMembership::where('elder_id', $e->id)->where('active', true)->whereIn('role', ['manager', 'relative', 'team'])->whereIn('user_id', $d['assignees'])->count();
             abort_unless($valid === count($d['assignees']), 422, 'Responsável sem vínculo familiar ativo.');
             $values = ['title' => $d['title'], 'description' => $d['description'] ?? null, 'due_at' => CarbonImmutable::parse($d['due_at'])->utc()];
             if ($id) {
@@ -60,7 +60,9 @@ class TaskController extends Controller
     {
         return $this->access->write($r->user(), $elder, 'confirm', function (Elder $e) use ($r, $task) {
             $t = Task::where('elder_id', $e->id)->findOrFail($task);
-            abort_unless($e->user_id === $r->user()->id || $t->assignees()->where('users.id', $r->user()->id)->exists(), 403);
+            $isAssigned = $t->assignees()->where('users.id', $r->user()->id)->exists();
+            $isLinkedProfessional = $r->user()->role === 'ideale_professional';
+            abort_unless($e->user_id === $r->user()->id || $isAssigned || $isLinkedProfessional, 403);
             if ($t->status === 'completed') {
                 return ['data' => $t->load('completion')];
             }
