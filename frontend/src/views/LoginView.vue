@@ -1,8 +1,7 @@
 
 <script setup>
 import { onMounted, ref } from 'vue'
-import api from '../services/api'
-import axios from 'axios'
+import api, { prepararCsrf } from '../services/api'
 import { useRouter } from 'vue-router'
 import { useRoute, RouterLink } from 'vue-router'
 
@@ -23,9 +22,7 @@ async function login() {
   loading.value = true
 
   try {
-    await axios.get('http://localhost:8000/sanctum/csrf-cookie', {
-      withCredentials: true
-    })
+    await prepararCsrf()
 
     await api.post('/auth/login', {
       email: email.value,

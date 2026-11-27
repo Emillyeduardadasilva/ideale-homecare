@@ -16,6 +16,7 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const userRole = inject('currentUserRole', ref(''))
+const userId = inject('currentUserId', ref(null))
 
 const pacientes = ref([])
 const pacienteId = ref('')
@@ -64,10 +65,12 @@ const podeCriarTarefas = computed(() =>
   userRole.value === 'family' && pacienteSelecionado.value?.is_manager === true
 )
 
+// Mesma regra da API: familiar só conclui se for responsável; idoso e profissional vinculado podem concluir.
 function podeConcluirTarefa(tarefa) {
   if (tarefa.status !== 'pending') return false
-  if (userRole.value === 'family') return true
-  return userRole.value === 'ideale_professional'
+  if (['elder', 'ideale_professional'].includes(userRole.value)) return true
+  if (userRole.value !== 'family') return false
+  return (tarefa.assignees || []).some(r => String(r.id) === String(userId.value))
 }
 
 async function carregarPacientes() {

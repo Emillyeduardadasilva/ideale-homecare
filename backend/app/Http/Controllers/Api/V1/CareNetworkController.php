@@ -70,7 +70,7 @@ class CareNetworkController extends Controller
                     'invitation_url' => rtrim(
                         config('care.frontend_url'),
                         '/'
-                    ) . '/accept-invitation?token=' . $token
+                    ) . '/aceitar-convite?token=' . $token
                 ], 201);
             }
         );

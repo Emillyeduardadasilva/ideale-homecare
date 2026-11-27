@@ -40,6 +40,9 @@ const routes = [
   { path: '/relatorios', name: 'relatorios', component: RelatoriosView },
   { path: '/financeiro', name: 'financeiro', component: FinanceiroView },
   { path: '/perfil', name: 'perfil', component: PerfilView },
+  // Links antigos de convite gerados com o caminho em inglês continuam funcionando.
+  { path: '/accept-invitation', redirect: to => ({ name: 'accept-invitation', query: to.query }) },
+  { path: '/:pathMatch(.*)*', redirect: '/' },
 ]
 
 const router = createRouter({
@@ -74,7 +77,7 @@ router.beforeEach(async (to) => {
       return { name: 'admin' }
     }
     if (['ideale_admin', 'ideale_professional'].includes(user?.role) && ['rede-cuidadores', 'financeiro'].includes(to.name)) {
-      return { name: 'dashboard' }
+      return { name: 'caregiver-dashboard' }
     }
   } catch (error) {
     if ([401, 419].includes(error?.response?.status)

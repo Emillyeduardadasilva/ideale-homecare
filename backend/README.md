@@ -71,9 +71,10 @@ Os comandos criam senha aleatória não exibida. A pessoa usa recuperação de s
 |---|---|---|---|---|---|
 | Consultar dados de cuidado | Sim | Sim | Próprios | Sim | Sim |
 | Gerir perfil, contatos, escala e convites | Sim | Não | Não | Não | Não |
-| Criar tarefas, remédios, diário, medições e eventos | Sim | Sim | Não | Não | Não |
-| Confirmar tarefa | Se responsável | Se responsável | Própria | Não | Não |
-| Relatar confirmação de medicação | Sim | Sim | Própria | Não | Não |
+| Criar tarefas, remédios e eventos | Sim | Sim | Não | Não | Não |
+| Registrar diário e medições | Sim | Sim | Não | Não | Sim |
+| Confirmar tarefa | Se responsável | Se responsável | Própria | Não | Sim |
+| Relatar confirmação de medicação | Sim | Sim | Própria | Não | Sim |
 | Agendar/reagendar/cancelar visita | Não | Não | Não | Sim | Não |
 | Confirmar/concluir visita | Não | Não | Não | Sim | Própria |
 | Confirmar leitura do diário | Não | Não | Não | Não | Na própria visita |
