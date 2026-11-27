@@ -14,6 +14,7 @@ import {
 
 import { useRouter } from 'vue-router'
 import api from '../services/api'
+import { normalizarItem } from '../services/cuidados'
 
 const router = useRouter()
 const userRole = inject('currentUserRole', ref(''))
@@ -129,7 +130,7 @@ async function carregarAgenda() {
       const resposta = await api.get('/caregiver/agenda', {
         params: { date: dataSelecionada.value }
       })
-      compromissos.value = resposta.data.data || []
+      compromissos.value = (resposta.data.data || []).map(normalizarItem)
       pacientes.value = [...new Map(compromissos.value.map(item => [item.elder_id, {
         id: item.elder_id, name: item.elder_name, active: true
       }])).values()]
@@ -174,7 +175,7 @@ async function carregarAgenda() {
       })
     })
 
-    compromissos.value = lista
+    compromissos.value = lista.map(normalizarItem)
 
   } catch (error) {
     console.error('Erro ao carregar agenda:', error)

@@ -1,6 +1,6 @@
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, inject } from 'vue'
 
 import {
   Users,
@@ -18,8 +18,11 @@ import {
 
 import { useRouter } from 'vue-router'
 import api from '../services/api'
+import { normalizarItem } from '../services/cuidados'
 
 const router = useRouter()
+const nomeUsuario = inject('currentUserName', ref(''))
+const inicialUsuario = computed(() => nomeUsuario.value.trim().charAt(0).toLocaleUpperCase('pt-BR') || 'I')
 
 const pacientes = ref([])
 const compromissos = ref([])
@@ -202,7 +205,7 @@ async function carregarDashboard() {
       })
     })
 
-    compromissos.value = lista
+    compromissos.value = lista.map(normalizarItem)
 
   } catch (error) {
     console.error('Erro ao carregar Dashboard:', error)
@@ -240,7 +243,7 @@ onMounted(carregarDashboard)
             <span></span>
           </button>
 
-          <div class="profile-avatar">E</div>
+          <div class="profile-avatar">{{ inicialUsuario }}</div>
         </div>
       </header>
 

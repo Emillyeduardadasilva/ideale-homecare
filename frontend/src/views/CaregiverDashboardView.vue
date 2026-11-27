@@ -3,6 +3,7 @@ import { computed, inject, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { Activity, CalendarDays, ClipboardList, Clock, Pill, RefreshCw, Users } from '@lucide/vue'
 import api from '../services/api'
+import { normalizarItem } from '../services/cuidados'
 
 const router = useRouter()
 const userRole = inject('currentUserRole', ref(''))
@@ -57,7 +58,7 @@ async function carregarPainel() {
 
     if (userRole.value === 'ideale_professional') {
       const agenda = await api.get('/caregiver/agenda')
-      compromissos.value = agenda.data.data || []
+      compromissos.value = (agenda.data.data || []).map(normalizarItem)
       return
     }
 
@@ -73,7 +74,7 @@ async function carregarPainel() {
         items.push({ ...item, elder_name: day.elder?.name || idosos.value[index].name, timezone: day.timezone })
       }
     })
-    compromissos.value = items
+    compromissos.value = items.map(normalizarItem)
   } catch (e) {
     erro.value = e.response?.data?.message || 'Não foi possível carregar seus atendimentos.'
   } finally {

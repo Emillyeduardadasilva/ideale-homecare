@@ -30,6 +30,7 @@ const userId = ref(null)
 const podeGerenciarRede = ref(false)
 provide('currentUserRole', role)
 provide('currentUserId', userId)
+provide('currentUserName', userName)
 
 const menuRecolhido = ref(false)
 const gerenciamentoAberto = ref(true)
