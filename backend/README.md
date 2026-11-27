@@ -4,7 +4,7 @@ API implementada em Laravel 13 para o Ideale Home Care V2. Inclui aplicação, m
 
 ## Instalação
 
-Requisitos: PHP 8.5 (PDO MySQL, OpenSSL, mbstring, cURL, XML, fileinfo e intl), Composer 2 e MySQL 8.4 LTS.
+Requisitos: PHP 8.5 (PDO MySQL, OpenSSL, mbstring, cURL, XML, fileinfo e intl), Composer 2 e MySQL 8.0 ou superior. O ambiente local utiliza MySQL 8.4 LTS.
 
 ```sh
 composer install

@@ -1,8 +1,7 @@
 <script setup>
 import { ref } from 'vue'
-import axios from 'axios'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import api from '../services/api'
+import api, { initializeCsrf } from '../services/api'
 
 const route = useRoute()
 const router = useRouter()
@@ -19,7 +18,7 @@ async function resetPassword() {
   message.value = ''
   loading.value = true
   try {
-    await axios.get('http://localhost:8000/sanctum/csrf-cookie', { withCredentials: true })
+    await initializeCsrf()
     await api.post('/auth/reset-password', { email: email.value, token: token.value, password: password.value, password_confirmation: confirmation.value })
     message.value = 'Senha redefinida. Você já pode entrar.'
     window.setTimeout(() => router.push({ name: 'login', query: { email: email.value } }), 1200)
