@@ -334,6 +334,13 @@ onMounted(carregarPacientes)
             Concluída
           </span>
 
+          <span
+            v-else-if="tarefa.status === 'pending'"
+            class="status"
+          >
+            Pendente
+          </span>
+
           <span v-else class="status cancelada">
             Cancelada
           </span>
