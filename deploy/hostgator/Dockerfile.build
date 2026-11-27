@@ -1,0 +1,5 @@
+FROM php:8.5-cli-bookworm
+RUN apt-get update && apt-get install -y --no-install-recommends libicu-dev libonig-dev libzip-dev unzip git ca-certificates && docker-php-ext-install -j2 pdo_mysql intl mbstring pcntl zip && rm -rf /var/lib/apt/lists/*
+COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
+COPY package.php /usr/local/bin/package-hostgator.php
+ENTRYPOINT ["php", "/usr/local/bin/package-hostgator.php"]

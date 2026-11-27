@@ -4,7 +4,7 @@ O backend da versão V2 está na pasta [`backend/`](backend/README.md). A aplica
 
 ## Executar o backend
 
-Requisitos: PHP 8.5, Composer 2 e MySQL 8.4. Configure um banco exclusivo da aplicação.
+Requisitos: PHP 8.5, Composer 2 e MySQL 8.0 ou superior. Configure um banco exclusivo da aplicação.
 
 ```powershell
 Set-Location backend
@@ -34,3 +34,7 @@ Para notificações em tempo real, configure Reverb conforme o [guia de operaç�
 - [Escopo e evidências de validação](backend/docs/ENTREGA.md)
 
 O frontend Vue consome a API separadamente. Em produção, a raiz pública do servidor deve apontar para `backend/public/`.
+
+## Publicar na HostGator
+
+O [guia do plano M](deploy/hostgator/README.md) explica como gerar o ZIP, configurar o domínio e instalar o cron de 15 minutos.

@@ -1,8 +1,7 @@
 <script setup>
 import { ref } from 'vue'
-import axios from 'axios'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import api from '../services/api'
+import api, { initializeCsrf } from '../services/api'
 
 const route = useRoute()
 const router = useRouter()
@@ -17,7 +16,7 @@ async function register() {
   error.value = ''
   loading.value = true
   try {
-    await axios.get('http://localhost:8000/sanctum/csrf-cookie', { withCredentials: true })
+    await initializeCsrf()
     await api.post('/auth/register', { name: name.value, email: email.value, password: password.value, password_confirmation: confirmation.value })
     await api.get('/auth/me')
     const redirect = route.query.redirect

@@ -3,6 +3,7 @@
 /backend/.env.*
 !/backend/.env.example
 !/backend/.env.testing.example
+!/backend/.env.production.example
 /frontend/.env.local
 /frontend/.env.*.local
 
@@ -26,3 +27,6 @@
 Thumbs.db
 desktop.ini
 *.log
+
+# Pacote de publicação local
+/dist-hostgator/

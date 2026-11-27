@@ -1,8 +1,7 @@
 <script setup>
 import { ref } from 'vue'
-import axios from 'axios'
 import { RouterLink } from 'vue-router'
-import api from '../services/api'
+import api, { initializeCsrf } from '../services/api'
 
 const email = ref('')
 const error = ref('')
@@ -14,7 +13,7 @@ async function requestReset() {
   message.value = ''
   loading.value = true
   try {
-    await axios.get('http://localhost:8000/sanctum/csrf-cookie', { withCredentials: true })
+    await initializeCsrf()
     const response = await api.post('/auth/forgot-password', { email: email.value })
     message.value = response.data.message || 'Se houver uma conta com esse e-mail, enviaremos as instruções.'
   } catch (e) {

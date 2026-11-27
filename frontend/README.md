@@ -33,3 +33,4 @@ Publique o conteúdo de `dist/` em HTTPS. Defina as variáveis `VITE_*` antes do
 ## Perfis de acesso
 
 A família gerencia sua própria rede de cuidado. Contas `ideale_admin` e `ideale_professional` abrem o painel do cuidador em `/cuidador` e veem somente idosos vinculados por convite. `system_admin` abre a visão global em `/admin`, consulta os dados e gerencia o status das contas; não altera registros clínicos. A API aplica as mesmas permissões independentemente do menu exibido.
+O build de produção usa /api/v1 no próprio domínio como padrão. A inicialização de sessão acompanha a origem da API configurada. Para publicar no plano M, consultar o [guia HostGator](../deploy/hostgator/README.md).

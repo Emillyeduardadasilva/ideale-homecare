@@ -1,0 +1,25 @@
+DirectoryIndex index.html
+Options -Indexes -MultiViews
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Arquivos ocultos ficam protegidos, preservando os desafios de SSL.
+    RewriteRule (^|/)\.(?!well-known(?:/|$)) - [F,L]
+
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+    RewriteCond %{HTTP:x-xsrf-token} .
+    RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
+
+    # API, sessão e saúde são atendidas pelo Laravel.
+    RewriteRule ^(?:api|sanctum|up)(?:/|$) index.php [END]
+
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [END]
+
+    RewriteRule ^(?:assets|storage)/ - [R=404,L]
+    # As demais URLs abrem o roteamento do Vue.
+    RewriteRule ^ index.html [END]
+</IfModule>
