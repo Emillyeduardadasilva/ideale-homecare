@@ -8,49 +8,32 @@ O que muda em relação ao ambiente local:
 - Não há processos permanentes. A fila roda pelo cron do agendador (`QUEUE_VIA_SCHEDULER=true`).
 - Não há Reverb (tempo real). Os avisos continuam na página **Notificações**.
 
-## 1. No seu computador
+## 1. O pacote
 
-Você precisa de PHP 8.3 ou superior, Composer 2 e Node.js 22.
+O `composer.lock` já está resolvido para PHP 8.3 e a suíte de testes passa nessa versão (57 testes; 3 exclusivos de MySQL pulados).
 
-1. Atualize as bibliotecas para versões compatíveis com PHP 8.3. Isso só precisa ser feito uma vez; depois, faça commit do `composer.lock` gerado.
+Para gerar o pacote no seu computador (PHP 8.3 ou superior, Composer 2 e Node.js 22):
 
-   ```powershell
-   Set-Location backend
-   composer update --no-interaction
-   php artisan test
-   ```
+```powershell
+Set-Location backend
+composer install --no-dev --optimize-autoloader
+php artisan key:generate --show   # guarde a chave para o .env
+Set-Location ..\frontend
+npm ci
+npm run build:hostgator
+```
 
-2. Gere a chave da aplicação e guarde o valor mostrado:
-
-   ```powershell
-   php artisan key:generate --show
-   ```
-
-3. Instale só o necessário para produção:
-
-   ```powershell
-   composer install --no-dev --optimize-autoloader
-   ```
-
-4. Gere as telas e copie para dentro do backend:
-
-   ```powershell
-   Set-Location ..\frontend
-   npm ci
-   npm run build:hostgator
-   ```
-
-5. Compacte a pasta `backend` inteira em `ideale.zip`, **sem** `.env`, `node_modules` e `storage/logs/*.log`. A pasta `vendor` precisa ir junto.
+Depois compacte a pasta `backend` inteira, **sem** `.env`, `node_modules` e `storage/logs/*.log`. A pasta `vendor` precisa ir junto.
 
 ## 2. No cPanel da HostGator
 
-1. **Versão do PHP:** em *Selecionar versão do PHP* (ou *MultiPHP Manager*), escolha **8.3** e ative as extensões `pdo_mysql`, `mbstring`, `openssl`, `curl`, `intl`, `fileinfo`, `xml`, `tokenizer`, `ctype` e, se disponível, `bcmath` ou `gmp`.
+1. **Versão do PHP:** em *Selecionar versão do PHP* (ou *MultiPHP Manager*), escolha **8.3** e ative as extensões `pdo_mysql`, `mbstring`, `openssl`, `curl`, `intl`, `fileinfo`, `xml`, `tokenizer`, `ctype` e **`bcmath` ou `gmp`** (necessária para as notificações no navegador).
 2. **Banco de dados:** em *Bancos de dados MySQL*, crie o banco e o usuário, dê todas as permissões ao usuário no banco e anote os nomes completos (com o prefixo da conta).
-3. **Arquivos:** no *Gerenciador de Arquivos*, crie a pasta `ideale` na sua pasta inicial (fora de `public_html`), envie o `ideale.zip` para ela e extraia. A estrutura fica `/home/SEU_USUARIO/ideale/artisan`, `/home/SEU_USUARIO/ideale/public`, etc.
+3. **Arquivos:** no *Gerenciador de Arquivos*, crie a pasta `ideale` na sua pasta inicial (fora de `public_html`), envie o zip para ela e extraia. A estrutura fica `/home/SEU_USUARIO/ideale/artisan`, `/home/SEU_USUARIO/ideale/public`, etc.
 4. **Endereço:** em *Subdomínios* (ou *Domínios*), crie `app.seudominio.com.br` com a raiz do documento em `ideale/public`.
 5. **HTTPS:** em *SSL/TLS Status*, rode o AutoSSL para o novo subdomínio.
 6. **E-mail:** em *Contas de e-mail*, crie `nao-responda@seudominio.com.br`. Ele envia a confirmação de cadastro e a recuperação de senha.
-7. **Configuração:** dentro de `ideale`, copie `.env.hostgator.example` para `.env` e preencha os valores entre `< >`.
+7. **Configuração:** dentro de `ideale`, crie o `.env` a partir de `.env.hostgator.example` (ou use o que veio no pacote) e preencha os valores entre `< >`. Com *Mostrar arquivos ocultos* ligado no Gerenciador de Arquivos, o `.env` aparece na lista.
 
 ## 3. Banco e agendador
 
@@ -84,14 +67,14 @@ Sem Terminal nem SSH, crie temporariamente um cron com `php .../artisan migrate 
 
 ## Atualizar depois
 
-Repita os passos 3 a 5 da parte 1, envie o novo zip, extraia por cima (sem apagar `.env` nem `storage`) e rode `php artisan migrate --force` e `php artisan optimize`. Faça backup do banco antes, pelo *phpMyAdmin* ou por *Backup* no cPanel.
+Gere o pacote de novo (parte 1), envie o novo zip, extraia por cima (sem apagar `.env` nem `storage`) e rode `php artisan migrate --force` e `php artisan optimize`. Faça backup do banco antes, pelo *phpMyAdmin* ou por *Backup* no cPanel.
 
 ## Problemas comuns
 
 | Sintoma | Causa provável |
 |---|---|
 | Erro 500 logo ao abrir | `.env` ausente ou `APP_KEY` vazia; veja `storage/logs/laravel.log`. |
-| Erro de versão do PHP | O subdomínio ainda está em PHP 8.1/8.2, ou o `composer.lock` não foi gerado com o passo 1.1. |
+| Erro de versão do PHP | O subdomínio ainda está em PHP 8.1/8.2. |
 | Login volta para a tela de entrada | `APP_URL`/`SANCTUM_STATEFUL_DOMAINS` diferente do endereço usado, ou HTTPS desligado com `SESSION_SECURE_COOKIE=true`. |
 | Remédios do dia não aparecem | O cron do `schedule:run` não está rodando. |
 | E-mail não chega | Dados de SMTP errados no `.env`; confira também a caixa de spam. |

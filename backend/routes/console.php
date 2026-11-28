@@ -33,16 +33,16 @@ Artisan::command('care:demo-users', function () {
     DB::transaction(function () use ($accounts, $password): void {
         $users = [];
         foreach ($accounts as $account) {
-            $users[$account['email']] = User::updateOrCreate(
-                ['email' => $account['email']],
-                [
-                    'name' => $account['name'],
-                    'role' => $account['role'],
-                    'active' => true,
-                    'email_verified_at' => now(),
-                    'password' => $password,
-                ],
-            );
+            // email_verified_at não é preenchível em massa: forceFill garante a conta já confirmada.
+            $user = User::firstOrNew(['email' => $account['email']]);
+            $user->forceFill([
+                'name' => $account['name'],
+                'role' => $account['role'],
+                'active' => true,
+                'email_verified_at' => now(),
+                'password' => $password,
+            ])->save();
+            $users[$account['email']] = $user;
         }
 
         Professional::updateOrCreate(
