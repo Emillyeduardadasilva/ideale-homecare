@@ -40,6 +40,7 @@ php artisan key:generate
 # Configure DB_* em .env antes de migrar.
 php artisan migrate
 php artisan care:demo-users   # opcional: cria admin, familiar e cuidador de demonstração (somente local)
+php artisan care:demo-data    # opcional: preenche essas contas com idosos, remédios, tarefas e evolução
 php artisan serve --host=127.0.0.1
 ```
 
@@ -74,6 +75,7 @@ O GitHub Actions roda os testes do backend e o build do frontend a cada push.
 
 ## Documentação
 
+- [Documentação da aplicação: requisitos, casos de uso, arquitetura, modelo do banco e diagramas](docs/DOCUMENTACAO.md)
 - [Instalação e funcionalidades do backend](backend/README.md)
 - [Frontend](frontend/README.md)
 - [Contrato de uso da API](backend/API.md)

@@ -73,6 +73,12 @@ function formatarHorario(data) {
   })
 }
 
+// A API envia só o medication_id na dose; o nome vem da lista de medicamentos já carregada.
+function nomeMedicamento(item) {
+  return item.medication?.name || item.medication_name ||
+    medicamentos.value.find(m => m.id === item.medication_id)?.name || 'Medicamento'
+}
+
 function nomeStatus(status) {
   const nomes = {
     pending: 'Pendente',
@@ -332,7 +338,7 @@ onMounted(carregarPacientes)
               :key="horario.id"
             >
               <Clock :size="13" />
-              {{ horario.time?.slice(0, 5) || '--:--' }}
+              {{ (horario.local_time || horario.time)?.slice(0, 5) || '--:--' }}
             </span>
           </div>
         </div>
@@ -362,7 +368,7 @@ onMounted(carregarPacientes)
 
         <div class="occurrence-info">
           <strong>
-            {{ item.medication?.name || item.medication_name || 'Medicamento' }}
+            {{ nomeMedicamento(item) }}
           </strong>
           <span>{{ item.medication?.dosage || item.dosage || '' }}</span>
           <small>{{ nomeStatus(item.status) }}</small>
