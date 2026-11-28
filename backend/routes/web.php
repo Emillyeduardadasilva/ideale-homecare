@@ -49,3 +49,16 @@ Route::prefix('api/v1/auth')->group(function () {
             ->name('verification.verify');
     });
 });
+
+// Telas do frontend publicadas junto com a API (npm run build:hostgator).
+// Qualquer GET que não seja da API devolve o app Vue, que cuida das rotas no navegador.
+$frontend = function (Request $request) {
+    $spa = resource_path('spa/index.html');
+    if ($request->is('api/*') || ! $request->isMethod('GET') || ! is_file($spa)) {
+        abort(404);
+    }
+
+    return response()->file($spa, ['Cache-Control' => 'no-cache, must-revalidate']);
+};
+Route::get('/', $frontend);
+Route::fallback($frontend);

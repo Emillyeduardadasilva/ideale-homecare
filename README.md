@@ -22,13 +22,13 @@ A equipe só acessa idosos aos quais foi vinculada por convite da família. A AP
 ## Estrutura
 
 ```
-backend/    API Laravel 13 (PHP 8.5, MySQL 8.4, Sanctum, filas, Reverb, Web Push)
+backend/    API Laravel 13 (PHP 8.3+, MySQL 8, Sanctum, filas, Reverb, Web Push)
 frontend/   SPA Vue 3 + Vite que consome a API
 ```
 
 ## Como executar localmente
 
-Requisitos: PHP 8.5, Composer 2, MySQL 8.4 e Node.js 22.
+Requisitos: PHP 8.3 ou superior, Composer 2, MySQL 8 e Node.js 22.
 
 ### 1. Backend
 
@@ -79,6 +79,7 @@ O GitHub Actions roda os testes do backend e o build do frontend a cada push.
 - [Contrato de uso da API](backend/API.md)
 - [OpenAPI 3.1](backend/docs/openapi.json), também em `GET /api/v1/openapi.json`
 - [Operação, publicação e recuperação](backend/docs/OPERACAO.md)
+- [Publicar na HostGator (hospedagem compartilhada)](backend/docs/HOSTGATOR.md)
 - [Escopo e evidências de validação](backend/docs/ENTREGA.md)
 
 Em produção, a raiz pública do servidor deve apontar para `backend/public/` e o conteúdo de `frontend/dist/` deve ser publicado em HTTPS. Notificações em tempo real (Reverb) e Web Push estão descritas no guia de operação.

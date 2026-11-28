@@ -81,6 +81,10 @@ Artisan::command('care:tick', function () {
     $this->info('Ocorrências e lembretes processados.');
 })->purpose('Gera ocorrências, materializa lembretes e recupera entregas pendentes');
 Schedule::command('care:tick')->everyMinute()->withoutOverlapping(5);
+if (config('care.queue_via_scheduler')) {
+    // Sem worker permanente: a cada minuto processa o que estiver na fila e encerra.
+    Schedule::command('queue:work --stop-when-empty --tries=1 --timeout=45 --max-time=50')->everyMinute()->withoutOverlapping(2);
+}
 Schedule::call(fn () => DB::table('idempotency_requests')->where('expires_at', '<', now())->delete())->daily();
 Artisan::command('care:staff {email} {--name=} {--role=ideale_professional} {--specialty=}', function () {
     $role = $this->option('role');

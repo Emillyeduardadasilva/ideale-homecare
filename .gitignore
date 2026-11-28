@@ -3,6 +3,7 @@
 /backend/.env.*
 !/backend/.env.example
 !/backend/.env.testing.example
+!/backend/.env.hostgator.example
 /frontend/.env.local
 /frontend/.env.*.local
 
@@ -10,6 +11,10 @@
 /backend/vendor/
 /backend/node_modules/
 /backend/public/build/
+/backend/public/assets/
+/backend/public/sw.js
+/backend/public/favicon.svg
+/backend/resources/spa/
 /frontend/node_modules/
 /frontend/dist/
 /frontend/dist-ssr/

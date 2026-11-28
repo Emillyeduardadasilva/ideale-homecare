@@ -2,7 +2,7 @@
 
 ## Instalação e atualização
 
-Use PHP 8.5 com PDO MySQL, mbstring, OpenSSL, cURL, XML, fileinfo e intl; Composer 2; MySQL 8.4. Instale as dependências com `composer install`, configure `.env`, gere `APP_KEY` apenas em uma instalação nova e execute `php artisan migrate`.
+Use PHP 8.3 ou superior com PDO MySQL, mbstring, OpenSSL, cURL, XML, fileinfo e intl; Composer 2; MySQL 8.4. Instale as dependências com `composer install`, configure `.env`, gere `APP_KEY` apenas em uma instalação nova e execute `php artisan migrate`.
 
 As migrations novas acrescentam versão aos contatos, versão/cancelamento às escalas, índices de consulta, entregas duráveis do Reverb e a tabela de lançamentos financeiros. Elas preservam os registros existentes. Nunca use `migrate:fresh` ou testes no banco da aplicação. A reversão de migrations deve ocorrer somente em ambiente identificado para esse fim; a publicação usa evolução do esquema para a frente.
 
